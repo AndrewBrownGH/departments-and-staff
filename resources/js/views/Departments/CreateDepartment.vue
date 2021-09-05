@@ -2,12 +2,15 @@
   <div>
     <errors :errors="errors"></errors>
     <b-form>
-      <label for="name">Название отдела</label>
+      <label for="form.name">Название отдела</label>
       <b-form-input type="text" id="name" aria-describedby="name-help-block" v-model="form.name"></b-form-input>
       <b-form-text id="name-help-block">
         Название должно содержать не меньше 2 букв и должно быть уникальным.
       </b-form-text>
-      <b-button class="mt-3" variant="outline-primary" @click.prevent="store">Добавить</b-button>
+      <b-button class="mt-3" variant="outline-primary" @click.prevent="store">
+        <b-spinner small v-if="loading"></b-spinner>
+        Добавить
+      </b-button>
     </b-form>
   </div>
 </template>
@@ -24,10 +27,12 @@ export default {
     form: {
       name: '',
     },
-    errors: null,
+    errors: [],
+    loading: false,
   }),
   methods: {
     store() {
+      this.loading = true;
       axios.post('/api/departments', this.form, {
         headers: {
           'Content-type': 'application/json'
@@ -37,7 +42,9 @@ export default {
         if (res.data.success) {
           this.$router.push('/departments');
         } else {
-          this.errors = res.data.errors;
+          this.errors.push(res.data.errors);
+          console.log(this.errors);
+          this.loading = false;
         }
       })
     }

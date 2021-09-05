@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Exceptions\Department\DestroyException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDepartmentRequest;
 use App\Models\Department;
@@ -11,19 +12,21 @@ use Illuminate\Support\Facades\DB;
 
 class DepartmentController extends Controller
 {
+    private const ITEMS_PER_PAGE = 10;
+
     public function index(): Response
     {
         $departments = DB::table('departments')
             ->select(DB::raw('
-                departments.id,
-                departments.name,
                 COUNT(employee_id) AS staff_count,
                 IFNULL(MAX(employees.salary), 0) AS max_salary
             '))
+            ->addSelect('departments.id')
+            ->addSelect('departments.name')
             ->leftJoin('departments_employees', 'departments_employees.department_id', '=', 'departments.id')
-            ->join('employees', 'departments_employees.employee_id', '=', 'employees.id')
+            ->leftJoin('employees', 'departments_employees.employee_id', '=', 'employees.id')
             ->groupBy('departments.id')
-            ->get();
+            ->paginate(self::ITEMS_PER_PAGE);
 
         return new Response($departments);
     }
@@ -42,7 +45,9 @@ class DepartmentController extends Controller
     {
         Department::create($request->validated());
 
-        return new Response(['success' => true]);
+        return new Response([
+            'success' => true
+        ]);
     }
 
     /**
@@ -83,25 +88,27 @@ class DepartmentController extends Controller
     {
         $department = Department::find($id);
 
-        if (!$department) {
+        try {
+            if (!$department) {
+                throw new DestroyException('Отдел не найден');
+            }
+            if (count($department->employees)) {
+                throw new DestroyException('Вы не можете удалить отдел, который имеет сотрудников');
+            }
+
+            $department->delete();
+
+        } catch (\Exception $exception) {
             return new Response([
                 'success' => false,
                 'errors' => [
-                    'message' => 'Отдел не найден',
-                ],
-            ]);
-        }
-        if (count($department->employees)) {
-            return new Response([
-                'success' => false,
-                'errors' => [
-                    'message' => 'Вы не можете удалить отдел, который имеет сотрудников',
+                    'destroyException' => $exception->getMessage(),
                 ],
             ]);
         }
 
-        $department->delete();
-
-        return new Response(['success' => true]);
+        return new Response([
+            'success' => true
+        ]);
     }
 }

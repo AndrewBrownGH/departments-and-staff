@@ -25,7 +25,7 @@ class StoreDepartmentRequest extends FormRequest
     {
         $response = new Response([
             'success' => false,
-            'errors' => $validator->errors(),
+            'errors' => $validator->errors()->get('name'),
         ]);
 
         throw new ValidationException($validator, $response);

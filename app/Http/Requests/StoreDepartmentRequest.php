@@ -17,8 +17,19 @@ class StoreDepartmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:departments|min:2',
+            'name' => [
+                'required',
+                'unique:departments',
+                'min:2',
+            ],
         ];
+    }
+
+    public function getData(): array
+    {
+        return $this->only([
+            'name',
+        ]);
     }
 
     protected function failedValidation(Validator $validator)

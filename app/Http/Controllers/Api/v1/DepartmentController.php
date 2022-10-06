@@ -32,19 +32,9 @@ class DepartmentController extends Controller
         return new Response($departments);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     public function store(StoreDepartmentRequest $request): Response
     {
-        Department::create($request->validated());
+        Department::create($request->getData());
 
         return new Response([
             'success' => true
@@ -59,7 +49,7 @@ class DepartmentController extends Controller
      */
     public function show($id)
     {
-        //
+        //TODO show
     }
 
     /**
@@ -70,7 +60,7 @@ class DepartmentController extends Controller
      */
     public function edit($id)
     {
-        //
+        //TODO edit
     }
 
     /**
@@ -82,7 +72,7 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        //TODO update
     }
 
     public function destroy($id): Response

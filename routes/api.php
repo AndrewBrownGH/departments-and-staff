@@ -9,5 +9,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::resource('departments', DepartmentController::class);
+Route::resource('departments', DepartmentController::class)
+    ->except(['create']);
+
 Route::resource('employees', EmployeeController::class);

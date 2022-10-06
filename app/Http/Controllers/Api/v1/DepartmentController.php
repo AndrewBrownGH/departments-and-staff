@@ -16,7 +16,7 @@ class DepartmentController extends Controller
 
     public function index(): Response
     {
-        $departments = DB::table('departments')
+        $departments = Department::query()
             ->select(DB::raw('
                 COUNT(employee_id) AS staff_count,
                 IFNULL(MAX(employees.salary), 0) AS max_salary
@@ -26,6 +26,7 @@ class DepartmentController extends Controller
             ->leftJoin('departments_employees', 'departments_employees.department_id', '=', 'departments.id')
             ->leftJoin('employees', 'departments_employees.employee_id', '=', 'employees.id')
             ->groupBy('departments.id')
+            ->orderByDesc('staff_count')
             ->paginate(self::ITEMS_PER_PAGE);
 
         return new Response($departments);
